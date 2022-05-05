@@ -2,6 +2,7 @@
 #define MOTOR_H
 #include <Arduino.h>
 
+
 class Motor {
   private:
     int in1;
@@ -68,5 +69,9 @@ class Motor {
 };
 
 
-
+//Data
+int Sonor1, Sonor2, Sonor3, IR1, IR2, IR3, IR4, IR5;
+void PutSonorData(int S1, int S2, int S3){
+  Sonor1 = S1; Sonor2 = S2; Sonor3 = S3; 
+}
 #endif
