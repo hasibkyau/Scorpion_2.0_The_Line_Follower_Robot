@@ -2,7 +2,6 @@
 #define MOTOR_H
 #include <Arduino.h>
 
-
 class Motor {
   private:
     int in1;
@@ -13,7 +12,7 @@ class Motor {
     const int resolution = 8;
     
   public:
-    int dutyCycle = 200;
+    int dutyCycle = 250;
     Motor(int in1, int in2, int enable1Pin) {
       this -> in1 = in1;
       this -> in2 = in2;
@@ -69,9 +68,28 @@ class Motor {
 };
 
 
-//Data
+//All Sensor Data declaration
 int Sonor1, Sonor2, Sonor3, IR1, IR2, IR3, IR4, IR5;
+//Getting sonor data
 void PutSonorData(int S1, int S2, int S3){
   Sonor1 = S1; Sonor2 = S2; Sonor3 = S3; 
+}
+//Getting IR data
+void PutIRData(int IRA,  int IRB, int IRC, int IRD, int IRE){
+    IR1 = IRA; IR2 = IRB; IR3 = IRC; IR4 = IRD; IRE = IR5;
+}
+
+void FollowLine(Motor A, Motor B){
+  if(IR1 == 1 && IR2 == 1){
+    A.Forward();
+    B.Forward();
+    Serial.println("Forward");
+  }
+  else{
+    A.Stop();
+    B.Stop();
+    Serial.println("Stop");
+    }
+   
 }
 #endif
