@@ -13,8 +13,8 @@ HCSR04 sonarB(12, 21); //Right Sonor - initialisation class HCSR04 (trig pin , e
 HCSR04 sonarC(2, 15); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
-Motor motorA(27, 26, 14);  // Right Motor - (in1, in2, en)
-Motor motorB(4, 5, 13);  // Left Motor - (in1, in2, en)
+Motor motorA(27, 26, 14, 0);  // Right Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
+Motor motorB(4, 5, 13, 1);  // Left Motor - (in1, in2, en)
 
 void setup() {
   // put your setup code here, to run once:
@@ -27,12 +27,12 @@ void setup() {
 }
 
 void loop() {
-  ActivateSonar(); // reading sonar data
+  //ActivateSonar(); // reading sonar data
   ActivateIR(); // reading IR data
-  FollowLine(motorA, motorB); // making decision
-   // A.Forward();
-   // B.Forward();
-  delay(500);
+  //FollowLine(motorA, motorB); // making decision
+    //motorA.Forward();
+    //motorB.Forward();
+  delay(60);
 }
 // Reading all Sonar sensor and passing data to another function for processing
 void ActivateSonar() {
@@ -56,10 +56,15 @@ void ActivateIR(){
   valC = digitalRead(IRC); // IR Sensor output pin connected to D1
   valD = digitalRead(IRD); // IR Sensor output pin connected to D1
   valE = digitalRead(IRE); // IR Sensor output pin connected to D1
+  Serial.print("valA :");
   Serial.println(valA); //right
+  Serial.print("valB :");
   Serial.println(valB); //left
+  Serial.print("valC :");
   Serial.println(valC);
+  Serial.print("valD :");
   Serial.println(valD);
+  Serial.print("valE :");
   Serial.println(valE);
   PutIRData(valA, valB, valC, valD, valE);// Sending data for processing
 }

@@ -7,16 +7,17 @@ class Motor {
     int in1;
     int in2;
     int enable1Pin;
+    int pwmChannel;
+    int dutyCycle = 255;
     const int freq = 30000;
-    const int pwmChannel = 0;
     const int resolution = 8;
     
   public:
-    int dutyCycle = 250;
-    Motor(int in1, int in2, int enable1Pin) {
+    Motor(int in1, int in2, int enable1Pin, int pwm) {
       this -> in1 = in1;
       this -> in2 = in2;
       this -> enable1Pin = enable1Pin;
+      this -> pwmChannel = pwm;
       init();
     };
 
@@ -25,6 +26,9 @@ class Motor {
       pinMode(in1, OUTPUT);
       pinMode(in2, OUTPUT);
       pinMode(enable1Pin, OUTPUT);
+
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, LOW);
 
       // configure LED PWM functionalitites
       ledcSetup(pwmChannel, freq, resolution);
@@ -37,6 +41,7 @@ class Motor {
 
     void Forward() {
       Serial.println("Forward");
+      //Speed(spd);
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
     };
@@ -81,9 +86,20 @@ void PutIRData(int IRA,  int IRB, int IRC, int IRD, int IRE){
 
 void FollowLine(Motor A, Motor B){
   if(IR1 == 1 && IR2 == 1){
-    A.Forward();
+    A.Speed(240); B.Speed(250);
+    A.Forward();// Motor Forward(Speed);
     B.Forward();
     Serial.println("Forward");
+  }
+  else if(IR1 == 1 && IR2 == 0){
+    A.Speed(200); B.Speed(255);
+        A.Forward();// Motor Forward(Speed);
+        B.Forward();
+  }
+    else if(IR1 == 0 && IR2 == 1){
+    A.Speed(240); B.Speed(200);
+        A.Forward();// Motor Forward(Speed);
+    B.Forward();
   }
   else{
     A.Stop();
