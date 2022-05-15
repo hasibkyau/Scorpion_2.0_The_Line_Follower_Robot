@@ -24,6 +24,8 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
+  motorA.Speed(230);
+  motorB.Speed(245);
 }
 
 void loop() {
@@ -76,7 +78,7 @@ void ActivateIR() {
 void CarMove() {
   //when car on the straight line
   if (valC == 0 && valA == 1 && valB == 0) {
-    motorB.Speed(255); motorA.Speed(230);
+    //motorB.Speed(240); motorA.Speed(230);
     motorA.Forward();// Motor Forward(Speed);
     motorB.Forward();
     //Serial.println("Forward");
@@ -84,33 +86,33 @@ void CarMove() {
 
   //for smooth right turn
   else if (valC == 0 && valA == 1 && valB == 1) {
-    motorB.Speed(255); motorA.Speed(0);
-    motorA.Forward();// Motor Forward(Speed);
+    //motorB.Speed(240); motorA.Speed(0);
+    motorA.Stop();// Motor Forward(Speed);
     motorB.Forward();
   }
 
   //for smooth left turn
   else if (valC == 1 && valA == 1 && valB == 0) {
-    motorB.Speed(0); motorA.Speed(240);
+    //motorB.Speed(240); motorA.Speed(220);
     motorA.Forward();// Motor Forward(Speed);
-    motorB.Forward();
+    motorB.Stop();
   }
 
   // curvy right turn
   else if (valC == 0 && valA == 0 && valB == 1) {
-    motorB.Speed(255); motorA.Speed(230);
-    motorA.Backward();// Motor Forward(Speed);
+    //motorB.Speed(255); motorA.Speed(230);
+    motorA.Stop();// Motor Forward(Speed);
     motorB.Forward();
   }
 
   //  curvy left turn
   else if (valC == 1 && valA == 0 && valB == 0) {
-    motorB.Speed(0); motorA.Speed(255);
+    //motorB.Speed(0); motorA.Speed(255);
     motorA.Forward();// Motor Forward(Speed);
-    motorB.Forward();
+    motorB.Stop();
   }
   else if (valC == 0 && valA == 0 && valB == 0) {
-    motorA.Speed(0); motorB.Speed(0);
+    //motorA.Speed(0); motorB.Speed(0);
     motorA.Stop();
     motorB.Stop();
     //Serial.println("Stop");
