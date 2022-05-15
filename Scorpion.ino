@@ -2,9 +2,9 @@
 #include <HCSR04.h>
 
 //Declaring Sonar sensor variable
-int S1, S2, S3;
+int S1, S2, S3, SA = 230, SB = 255;
 //Declaring digital pin for IR sensor
-int IRA = 32, IRB = 33, IRC = 25, IRD = 34, IRE = 19; //IRD = Right side IR
+int IRA = 32, IRB = 33, IRC = 19, IRD = 24, IRE = 18; //IRD = Right side IR
 //Declaring variable for IR
 int valA = 0, valB = 0, valC = 0, valD = 0, valE = 0;
 
@@ -29,9 +29,13 @@ void setup() {
 void loop() {
   //ActivateSonar(); // reading sonar data
   ActivateIR(); // reading IR data
+  CarMove();
   //FollowLine(motorA, motorB); // making decision
-    //motorA.Forward();
-    //motorB.Forward();
+  //motorB.Speed(SB);
+  //motorA.Speed(SA);
+  //motorA.Forward();// Motor Forward(Speed);
+  //motorB.Forward();
+
   delay(60);
 }
 // Reading all Sonar sensor and passing data to another function for processing
@@ -50,23 +54,67 @@ void ActivateSonar() {
 }
 
 // Read all IR sensor and passing data to another function for processing
-void ActivateIR(){
+void ActivateIR() {
   valA = digitalRead(IRA); // IR Sensor output pin connected to D1
   valB = digitalRead(IRB); // IR Sensor output pin connected to D1
   valC = digitalRead(IRC); // IR Sensor output pin connected to D1
   valD = digitalRead(IRD); // IR Sensor output pin connected to D1
   valE = digitalRead(IRE); // IR Sensor output pin connected to D1
-  Serial.print("valA :");
-  Serial.println(valA); //right
-  Serial.print("valB :");
-  Serial.println(valB); //left
-  Serial.print("valC :");
-  Serial.println(valC);
-  Serial.print("valD :");
-  Serial.println(valD);
-  Serial.print("valE :");
+  Serial.print("IR:C=");
+  Serial.print(valC); //right
+  Serial.print(":A=");
+  Serial.print(valA); //left
+  Serial.print(":B=");
+  Serial.print(valB);
+  Serial.print(":");
+  Serial.print(valD);
+  Serial.print(":");
   Serial.println(valE);
-  PutIRData(valA, valB, valC, valD, valE);// Sending data for processing
+  //PutIRData(valA, valB, valC, valD, valE);// Sending data for processing
 }
 
+void CarMove() {
+  //when car on the straight line
+  if (valC == 0 && valA == 1 && valB == 0) {
+    motorB.Speed(255); motorA.Speed(230);
+    motorA.Forward();// Motor Forward(Speed);
+    motorB.Forward();
+    //Serial.println("Forward");
+  }
+
+  //for smooth right turn
+  else if (valC == 0 && valA == 1 && valB == 1) {
+    motorB.Speed(255); motorA.Speed(0);
+    motorA.Forward();// Motor Forward(Speed);
+    motorB.Forward();
+  }
+
+  //for smooth left turn
+  else if (valC == 1 && valA == 1 && valB == 0) {
+    motorB.Speed(0); motorA.Speed(240);
+    motorA.Forward();// Motor Forward(Speed);
+    motorB.Forward();
+  }
+
+  // curvy right turn
+  else if (valC == 0 && valA == 0 && valB == 1) {
+    motorB.Speed(255); motorA.Speed(230);
+    motorA.Backward();// Motor Forward(Speed);
+    motorB.Forward();
+  }
+
+  //  curvy left turn
+  else if (valC == 1 && valA == 0 && valB == 0) {
+    motorB.Speed(0); motorA.Speed(255);
+    motorA.Forward();// Motor Forward(Speed);
+    motorB.Forward();
+  }
+  else if (valC == 0 && valA == 0 && valB == 0) {
+    motorA.Speed(0); motorB.Speed(0);
+    motorA.Stop();
+    motorB.Stop();
+    //Serial.println("Stop");
+  }
+
+}
 
