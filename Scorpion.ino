@@ -4,11 +4,11 @@
 //Declaring Sonar sensor variable
 int S1, S2, S3, SA = 230, SB = 255;
 //Declaring digital pin for IR sensor
-int IRA = 32, IRB = 33, IRC = 19, IRD = 24, IRE = 18; //IRD = Right side IR
+int IRA = 32, IRB = 33, IRC = 19, IRD = 22, IRE = 23; //IRD = Right side IR
 //Declaring variable for IR
 int valA = 0, valB = 0, valC = 0, valD = 0, valE = 0;
 
-HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarA(24, 18); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarB(12, 21); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarC(2, 15); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
@@ -68,9 +68,9 @@ void ActivateIR() {
   Serial.print(valA); //left
   Serial.print(":B=");
   Serial.print(valB);
-  Serial.print(":");
+  Serial.print(":D=");
   Serial.print(valD);
-  Serial.print(":");
+  Serial.print(":E=");
   Serial.println(valE);
   //PutIRData(valA, valB, valC, valD, valE);// Sending data for processing
 }
@@ -78,7 +78,7 @@ void ActivateIR() {
 void CarMove() {
   //when car on the straight line
   if (valC == 0 && valA == 1 && valB == 0) {
-    //motorB.Speed(240); motorA.Speed(230);
+    motorB.Speed(245); motorA.Speed(230);
     motorA.Forward();// Motor Forward(Speed);
     motorB.Forward();
     //Serial.println("Forward");
@@ -86,37 +86,51 @@ void CarMove() {
 
   //for smooth right turn
   else if (valC == 0 && valA == 1 && valB == 1) {
-    //motorB.Speed(240); motorA.Speed(0);
-    motorA.Stop();// Motor Forward(Speed);
+    motorB.Speed(255); motorA.Speed(200);
+    motorA.Forward();// Motor Forward(Speed);
     motorB.Forward();
   }
 
   //for smooth left turn
   else if (valC == 1 && valA == 1 && valB == 0) {
-    //motorB.Speed(240); motorA.Speed(220);
-    motorA.Forward();// Motor Forward(Speed);
-    motorB.Stop();
+    if (valE == 1 && valD == 0) {
+      motorB.Speed(255); motorA.Speed(245);
+      motorA.Forward();// Motor Forward(Speed);
+      motorB.Backward();
+    }
+    else {  
+      motorB.Speed(200); motorA.Speed(255);
+      motorA.Forward();// Motor Forward(Speed);
+      motorB.Forward();
+    }
   }
 
   // curvy right turn
   else if (valC == 0 && valA == 0 && valB == 1) {
-    //motorB.Speed(255); motorA.Speed(230);
-    motorA.Stop();// Motor Forward(Speed);
+    motorB.Speed(245);
     motorB.Forward();
+    motorA.Stop();// Motor Forward(Speed);
+
   }
 
   //  curvy left turn
   else if (valC == 1 && valA == 0 && valB == 0) {
-    //motorB.Speed(0); motorA.Speed(255);
+    motorA.Speed(230);
     motorA.Forward();// Motor Forward(Speed);
     motorB.Stop();
+
   }
-  else if (valC == 0 && valA == 0 && valB == 0) {
+  else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 0) {
     //motorA.Speed(0); motorB.Speed(0);
     motorA.Stop();
     motorB.Stop();
     //Serial.println("Stop");
   }
-
+  else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 1) {
+    motorA.Speed(245); 
+    motorA.Forward();
+    motorB.Stop();
+    //Serial.println("Stop");
+  }
 }
 
