@@ -86,19 +86,29 @@ void CarMove() {
 
   //for smooth right turn
   else if (valC == 0 && valA == 1 && valB == 1) {
-    motorB.Speed(255); motorA.Speed(200);
-    motorA.Forward();// Motor Forward(Speed);
-    motorB.Forward();
+    //if 90 degree right turn
+    if (valE == 0 && valD == 1) {
+      motorB.Speed(255); motorA.Speed(245);
+      motorA.Backward();// Motor Forward(Speed);
+      motorB.Forward();
+    }
+    else {
+      motorB.Speed(255); motorA.Speed(200);
+      motorA.Forward();// Motor Forward(Speed);
+      motorB.Forward();
+    }
   }
 
   //for smooth left turn
   else if (valC == 1 && valA == 1 && valB == 0) {
+    //if 90 degree left turn
     if (valE == 1 && valD == 0) {
       motorB.Speed(255); motorA.Speed(245);
       motorA.Forward();// Motor Forward(Speed);
       motorB.Backward();
     }
-    else {  
+
+    else {
       motorB.Speed(200); motorA.Speed(255);
       motorA.Forward();// Motor Forward(Speed);
       motorB.Forward();
@@ -120,17 +130,29 @@ void CarMove() {
     motorB.Stop();
 
   }
+  //when no sensor is detected
   else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 0) {
     //motorA.Speed(0); motorB.Speed(0);
     motorA.Stop();
     motorB.Stop();
     //Serial.println("Stop");
   }
+
+  //when only left most sensor is detected
   else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 1) {
-    motorA.Speed(245); 
+    motorA.Speed(245);
     motorA.Forward();
     motorB.Stop();
     //Serial.println("Stop");
   }
+
+  //when only right most sensor is detected
+  else if (valC == 0 && valA == 0 && valB == 0 && valD == 1 && valE == 0) {
+    motorB.Speed(255);
+    motorB.Forward();
+    motorA.Stop();
+    //Serial.println("Stop");
+  }
 }
+
 
