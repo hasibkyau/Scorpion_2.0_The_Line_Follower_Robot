@@ -79,39 +79,5 @@ void PutIRData(int IRA,  int IRB, int IRC, int IRD, int IRE) {
   IR1 = IRA; IR2 = IRB; IR3 = IRC; IR4 = IRD; IRE = IR5;
 }
 
-void FollowLine(Motor A, Motor B) {
-  if (IR1 == 1 && IR2 == 0 && IR3 == 0) {
-    A.Speed(240); B.Speed(240);
-    A.Forward();// Motor Forward(Speed);
-    B.Forward();
-    //Serial.println("Forward");
-  }
-  else if (IR1 == 1 && IR2 == 1 && IR3 == 0) {
-    A.Speed(200); B.Speed(240);
-    A.Forward();// Motor Forward(Speed);
-    B.Forward();
-  }
-  else if (IR1 == 0 && IR2 == 1 && IR3 == 0) {
-    A.Speed(0); B.Speed(240);
-    A.Forward();// Motor Forward(Speed);
-    B.Forward();
-  }
-  else if (IR1 == 1 && IR2 == 0 && IR3 == 1) {
-    A.Speed(240); B.Speed(200);
-    A.Forward();// Motor Forward(Speed);
-    B.Forward();
-  }
-  else if (IR1 == 0 && IR2 == 0 && IR3 == 1) {
-    A.Speed(240); B.Speed(0);
-    A.Forward();// Motor Forward(Speed);
-    B.Forward();
-  }
-  else {
-    A.Speed(0); B.Speed(0);
-    A.Stop();
-    B.Stop();
-    Serial.println("Stop");
-  }
 
-}
 #endif
