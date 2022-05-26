@@ -67,17 +67,4 @@ class Motor {
     }
 };
 
-
-//All Sensor Data declaration
-int Sonor1, Sonor2, Sonor3, IR1, IR2, IR3, IR4, IR5;
-//Getting sonor data
-void PutSonorData(int S1, int S2, int S3) {
-  Sonor1 = S1; Sonor2 = S2; Sonor3 = S3;
-}
-//Getting IR data
-void PutIRData(int IRA,  int IRB, int IRC, int IRD, int IRE) {
-  IR1 = IRA; IR2 = IRB; IR3 = IRC; IR4 = IRD; IRE = IR5;
-}
-
-
 #endif

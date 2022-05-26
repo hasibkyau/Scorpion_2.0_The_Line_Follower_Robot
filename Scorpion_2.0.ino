@@ -1,21 +1,22 @@
 #include "Scorpion.h"
 #include <HCSR04.h>
 
+int Speed = 200;
 //Declaring Sonar sensor variable
 int S1, S2, S3, SA = 230, SB = 255;
 //Declaring digital pin for IR sensor
-int IRA = 32, IRB = 33, IRC = 19, IRD = 22, IRE = 23; //IRD = Right side IR
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IRD = Right side IR
 //Declaring variable for IR
 int valA = 0, valB = 0, valC = 0, valD = 0, valE = 0;
 bool obstacle = false;
 
-HCSR04 sonarA(17, 18); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarB(12, 21); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarC(2, 15); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarC(21, 4); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
-Motor motorA(27, 26, 14, 0);  // Right Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
-Motor motorB(4, 5, 13, 1);  // Left Motor - (in1, in2, en)
+Motor motorA(27, 14, 26, 0);  // Right Motor - (in1, in2, en)
+Motor motorB(33, 25, 32, 1);  // Left Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
 
 void setup() {
   // put your setup code here, to run once:
@@ -25,18 +26,33 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
-  motorA.Speed(230);
-  motorB.Speed(245);
+  motorA.Speed(200);
+  motorB.Speed(200);
 }
 
 void loop() {
-  ActivateSonar(); // reading sonar data
+  //ActivateSonar(); // reading sonar data
   ActivateIR(); // reading IR data
-  
+
+  motorA.Speed(Speed);
+  motorB.Speed(Speed);
+
+  motorA.Forward();
+  motorB.Forward();
+
   //FollowObject();
   //FollowLine();
-  MakeDecision();
-  delay(60);
+  //MakeDecision();
+  delay(200);
+  if (Speed < 255 && Speed >= 200) {
+    if (Speed == 255) {
+      Speed == 200;
+    }
+    else {
+      Speed += 1;
+    }
+  }
+
 }
 // Reading all Sonar sensor and passing data to another function for processing
 void ActivateSonar() {
@@ -63,20 +79,20 @@ void ActivateIR() {
   valC = digitalRead(IRC); // IR Sensor output pin connected to D1
   valD = digitalRead(IRD); // IR Sensor output pin connected to D1
   valE = digitalRead(IRE); // IR Sensor output pin connected to D1
-  Serial.print("IR:C=");
-  Serial.print(valC); //right
+
   Serial.print(":A=");
   Serial.print(valA); //left
   Serial.print(":B=");
   Serial.print(valB);
+  Serial.print(":C=");
+  Serial.print(valC); //right
   Serial.print(":D=");
   Serial.print(valD);
   Serial.print(":E=");
   Serial.println(valE);
-  //PutIRData(valA, valB, valC, valD, valE);// Sending data for processing
 }
 
-void MakeDecision(){
+void MakeDecision() {
   if (S1 <= 5) {
     SkipObject();
   }
@@ -91,7 +107,7 @@ void MakeDecision(){
       motorA.Forward(); motorB.Forward();
     }
   }
-  else{
+  else {
     FollowLine();
   }
 }
@@ -232,7 +248,7 @@ void FollowObject() {
   int totalDist = (S2 + S3) - 4;
   int Dist = (totalDist / 2) - 2;
   motorA.Speed(240); motorB.Speed(255);
-  
+
   if (S2 <= Dist) {
     motorA.Forward();
     motorB.Stop();
