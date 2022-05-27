@@ -1,12 +1,12 @@
 #include "Scorpion.h"
 #include <HCSR04.h>
 
-int DutyCycle = 200;
+int DutyCycle = 200, low_speed = 200, med_speed = 230, max_speed = 255;
 int FrontWall = 20, RightWall = 20, LeftWall = 20, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
 
-bool obstacle = false;
+bool obstacle = true;
 
 HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
@@ -25,11 +25,11 @@ void setup() {
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
 
+  Neutral();
   MotorR.Speed(DutyCycle);
   MotorL.Speed(DutyCycle);
-  MotorR.Release();
-  MotorL.Release();
-  delay(1000);
+
+  delay(100);
   MotorR.Forward();
   MotorL.Forward();
 }
@@ -65,10 +65,10 @@ void loop() {
     else if (AIR == 3)
     {
       if (B == 0) {
-        (A == 0) ? SharpLeft() : LowLeft();
+        (A == 0) ? SharpLeft() : SmoothLeft();
       }
       else if (D == 0) {
-        (C == 0) ? LowRight() : SharpRight();
+        (C == 0) ? SmoothRight() : SharpRight();
       }
     }
     else if (AIR == 2 || AIR == 1) {
@@ -82,7 +82,7 @@ void loop() {
     {
       Straight();
       delay(500);
-      SpeedDown(); // Speed 0 with forward gear
+      Brake(); // Speed 0 with forward gear
       ReadIR(); ReadSonar();
       AIR = A + B + C + D + E;
 
@@ -114,12 +114,12 @@ void loop() {
 
 //*** Straight Forward
 void Straight() {
-  MotorR.Speed(255);
-  MotorL.Speed(255);
+  MotorR.Speed(max_speed);
+  MotorL.Speed(max_speed);
 }
 
 //*** Car speed 0 with with forward gear
-void SpeedDown() {
+void Brake() {
   MotorR.Speed(0);
   MotorL.Speed(0);
 }
@@ -130,45 +130,45 @@ void Neutral() {
   MotorL.Release();
 }
 
-//*** Low Left Turn
-void LowLeft() {
-  MotorL.Speed(230);
-  MotorR.Speed(255);
+//*** Smooth Left Turn
+void SmoothLeft() {
+  MotorL.Speed(med_speed);
+  MotorR.Speed(max_speed);
 }
 
 //*** Medium Left Turn
 void MedLeft() {
-  MotorL.Speed(200);
-  MotorR.Speed(255);
+  MotorL.Speed(low_speed);
+  MotorR.Speed(max_speed);
 }
 
-//*** Low Left Turn
+//*** Sharp Left Turn
 void SharpLeft() {
   MotorL.Speed(0);
-  MotorR.Speed(255);
+  MotorR.Speed(max_speed);
 }
 
-//*** Low Right Turn
-void LowRight() {
-  MotorR.Speed(230);
-  MotorL.Speed(255);
+//*** Smooth Right Turn
+void SmoothRight() {
+  MotorR.Speed(med_speed);
+  MotorL.Speed(max_speed);
 }
 
 //*** Medium Right Turn
 void MedRight() {
-  MotorR.Speed(200);
-  MotorL.Speed(255);
+  MotorR.Speed(low_speed);
+  MotorL.Speed(max_speed);
 }
 
 //*** Sharp Right Turn
 void SharpRight() {
   MotorR.Speed(0);
-  MotorL.Speed(255);
+  MotorL.Speed(max_speed);
 }
 
 //*** 90d left turn
 void _90dLeft() {
-  MotorR.Speed(255); MotorL.Speed(0);
+  MotorR.Speed(max_speed); MotorL.Speed(0);
   do {
     ReadIR();
     AIR = A + B + C + D + E;
@@ -178,7 +178,7 @@ void _90dLeft() {
 
 //*** 90d Right Turn
 void _90dRight() {
-  MotorL.Speed(255); MotorR.Speed(0);
+  MotorL.Speed(max_speed); MotorR.Speed(0);
   do {
     ReadIR();
     AIR = A + B + C + D + E;
@@ -189,7 +189,7 @@ void _90dRight() {
 //*** 180d turn on place
 void _180dturn() {
   Neutral(); // Both motor stop with neutral gear
-  MotorR.Speed(255); MotorL.Speed(255);
+  MotorR.Speed(max_speed); MotorL.Speed(max_speed);
   delay(68);
   MotorL.Forward(); MotorR.Backward();// Rotate on place
   do {
@@ -197,9 +197,10 @@ void _180dturn() {
     AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0)); // finish 180d ?
-  Neutral(); // Both motor stop with neutral gear
+  Brake(); // Both motor stop with neutral gear
+  Neutral();
   delay(68);
-  Straight(); // Forward gear
+  MotorL.Forward(); MotorR.Forward();
 }
 
 //*** Default turn
@@ -270,5 +271,5 @@ void AvoidObstacle() {
     AIR = A+B+C+D+E;
   }
   while(AIR > 3); // untill tow sensor track the line
-  SpeedDown();
+  Brake();
 }
