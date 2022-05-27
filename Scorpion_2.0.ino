@@ -35,17 +35,12 @@ void setup() {
 }
 
 void loop() {
-  //ActivateSonar(); // reading sonar data
-  ActivateIR(); // reading IR data
+  //ReadSonar(); // reading sonar data
+  ReadIR(); // reading IR data
   AIR = A + B + C + D + E; // sum of all IR sensor
 
-  if (RightWall <= 5) {
-    MedLeft();
-  }
-  else if (LeftWall <= 5) {
-    MedRight();
-  }
-  else if (FrontWall >= 5){
+
+  if (FrontWall >= 25){
     if (AIR == 4)
     {
       if (A == 0) {
@@ -76,15 +71,25 @@ void loop() {
     else if (AIR == 2 || AIR == 1) {
       (A == 1) ? _90dRight() : _90dLeft();
     }
-    else
+    else if (AIR == 0)
     {
-      if (AIR == 0) {
-        _90dRight();
-      }
-      else if(AIR == 5) {
-        Stop();
+      DefaultTurn();
+    }
+    else if(AIR == 5)
+    {
+      Straight();
+      delay(500);
+      MotorL.Speed(0);MotorR.Speed(0);
+      ReadIR(); ReadSonar();
+      AIR = A + B + C + D + E;
+      if(AIR =! 5){Straight();} // if found track. It was a blank track.
+      else if(AIR == 5) // if no track
+      {
+        if(LeftWall <= 50 || RightWall <= 50){PassThroughWalls();} // if no track & found walls
+        else{_180dturn();} //if no track and no Side Walls. The track ends here.
       }
     }
+    
   }
   else if(FrontWall <= 5){
     AvoidWall();
@@ -130,7 +135,7 @@ void SharpRight() {
 void _90dLeft() {
   MotorR.Speed(255); MotorL.Speed(0);
   do {
-    ActivateIR();
+    ReadIR();
     AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0));
@@ -138,22 +143,37 @@ void _90dLeft() {
 void _90dRight() {
   MotorL.Speed(255); MotorR.Speed(0);
   do {
-    ActivateIR();
+    ReadIR();
     AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0));
 }
 void _180dturn() {
-  MotorL.Speed(255); MotorR.Speed(0);
+  MotorR.Release(); MotorL.Release();
+  MotorR.Speed(255); MotorL.Speed(255);
+  delay(68);
+  MotorL.Forward(); MotorR.Backward();
   do {
-    ActivateIR();
+    ReadIR();
     AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0));
+  MotorR.Release(); MotorL.Release();
+  delay(68);
+  MotorL.Forward(); MotorR.Forward();
 }
 
+void DefaultTurn(){
+   true ? _90dRight() : _90dLeft();
+}
+
+void PassThroughWalls(){
+  
+}
+
+
 // Reading all Sonar sensor and passing data to another function for processing
-void ActivateSonar() {
+void ReadSonar() {
   FrontWall = sonarA.dist();
   RightWall = sonarB.dist();
   LeftWall = sonarC.dist();
@@ -169,7 +189,7 @@ void ActivateSonar() {
 }
 
 // Read all IR sensor and passing data to another function for processing
-void ActivateIR() {
+void ReadIR() {
   A = digitalRead(IRA); // IR Sensor output pin connected to D1
   B = digitalRead(IRB); // IR Sensor output pin connected to D1
   C = digitalRead(IRC); // IR Sensor output pin connected to D1
