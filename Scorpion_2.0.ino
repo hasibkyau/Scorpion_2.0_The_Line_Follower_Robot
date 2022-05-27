@@ -40,11 +40,10 @@ void loop() {
   FrontWall = sonarA.dist();
   Serial.print(":FrontWall=");
   Serial.print(FrontWall);
-  
+
   AIR = A + B + C + D + E; // sum of all IR sensor
 
-
-  if (FrontWall >= 25){
+  if (FrontWall >= 25) {
     if (AIR == 4)
     {
       if (A == 0) {
@@ -79,32 +78,36 @@ void loop() {
     {
       DefaultTurn();
     }
-    else if(AIR == 5)
+    else if (AIR == 5)
     {
       Straight();
       delay(500);
-      CarStop(); // Speed 0 with forward gear
+      SpeedDown(); // Speed 0 with forward gear
       ReadIR(); ReadSonar();
       AIR = A + B + C + D + E;
-      
-      if(AIR =! 5){Straight();} // if found track. It was a blank track.
-      else if(AIR == 5) // if no track
+
+      if (AIR = ! 5) {
+        Straight(); // if found track. It was a blank track.
+      }
+      else if (AIR == 5) // if no track
       {
-        if(LeftWall <= 50 || RightWall <= 50)// if no track & found walls
+        if (LeftWall <= 50 || RightWall <= 50) // if no track & found walls
         {
           // follow walls until the track is founded
-          do{
+          do {
             ReadIR();
             AIR = A + B + C + D + E;
-            PassThroughWalls();  
-            }
-          while(AIR == 5);
-        } 
-        else{_180dturn();} //if no track and no Side Walls. The track ends here.
+            PassThroughWalls();
+          }
+          while (AIR == 5);
+        }
+        else {
+          _180dturn(); //if no track and no Side Walls. The track ends here.
+        }
       }
-    }  
+    }
   }
-  else if(FrontWall <= 5){
+  else if (FrontWall <= 5) {
     AvoidObstacle();
   }
 }
@@ -116,13 +119,13 @@ void Straight() {
 }
 
 //*** Car speed 0 with with forward gear
-void CarStop() {
+void SpeedDown() {
   MotorR.Speed(0);
   MotorL.Speed(0);
 }
 
 //*** Car stop and neutral
-void CarRelease() {
+void Neutral() {
   MotorR.Release();
   MotorL.Release();
 }
@@ -185,7 +188,7 @@ void _90dRight() {
 
 //*** 180d turn on place
 void _180dturn() {
-  CarRelease(); // Both motor stop with neutral gear
+  Neutral(); // Both motor stop with neutral gear
   MotorR.Speed(255); MotorL.Speed(255);
   delay(68);
   MotorL.Forward(); MotorR.Backward();// Rotate on place
@@ -194,36 +197,34 @@ void _180dturn() {
     AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0)); // finish 180d ?
-  CarRelease(); // Both motor stop with neutral gear
+  Neutral(); // Both motor stop with neutral gear
   delay(68);
   Straight(); // Forward gear
 }
 
 //*** Default turn
-void DefaultTurn(){
-   true ? _90dRight() : _90dLeft();
+void DefaultTurn() {
+  true ? _90dRight() : _90dLeft();
 }
 
-
 //*** Move straight forward in the walls by middle
-void PassThroughWalls(){
+void PassThroughWalls() {
   ReadSonar();
   RoadWidth = LeftWall + RightWall; // total side gap
-  SideSpace = RoadWidth/2 - 2; // average side gap for each side
-  
-  if(RoadWidth <= 120){ //when the sensor can count distance. Go by the middle of path
-    if (LeftWall <= SideSpace) { // car is not in middle of the. 
-    MedRight();
+  SideSpace = RoadWidth / 2 - 2; // average side gap for each side
+
+  if (RoadWidth <= 120) { //when the sensor can count distance. Go by the middle of path
+    if (LeftWall <= SideSpace) { // car is not in middle of the.
+      MedRight();
     }
     else if (RightWall <= SideSpace) { // car is not in middle of the walls
-    MedLeft();
+      MedLeft();
     }
-    else{ // car is now in middle of the walls
+    else { // car is now in middle of the walls
       Straight();
     }
   }
 }
-
 
 //*** Reading all Sonar sensor
 void ReadSonar() {
@@ -248,15 +249,26 @@ void ReadIR() {
   Serial.print(":B=");
   Serial.print(B);
   Serial.print(":C=");
-  Serial.print(C); 
+  Serial.print(C);
   Serial.print(":D=");
   Serial.print(D);
   Serial.print(":E=");
   Serial.print(E);
 }
 
+//***Avoid obstacle if found  
+//for default turn == left
 void AvoidObstacle() {
-
+  MotorL.Speed(0); MotorR.Speed(255);// Left turn
+  delay(555);
+  MotorR.Speed(0); MotorL.Speed(255);// Right turn
+  delay(555);
+  MotorR.Speed(255);// Straight forward
+  delay(555);
+  do{
+    ReadIR();
+    AIR = A+B+C+D+E;
+  }
+  while(AIR > 3); // untill tow sensor track the line
+  SpeedDown();
 }
-
-
