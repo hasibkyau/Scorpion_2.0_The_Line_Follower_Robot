@@ -1,13 +1,11 @@
 #include "Scorpion.h"
 #include <HCSR04.h>
 
-int Speed = 200;
-//Declaring Sonar sensor variable
-int S1, S2, S3, SA = 230, SB = 255;
-//Declaring digital pin for IR sensor
-int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IRD = Right side IR
-//Declaring variable for IR
-int valA = 0, valB = 0, valC = 0, valD = 0, valE = 0;
+int DutyCycle = 200;
+int FrontWall = 20, RightWall = 20, LeftWall = 20; //Declaring Sonar sensor variable
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
+int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
+
 bool obstacle = false;
 
 HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
@@ -15,8 +13,8 @@ HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , ec
 HCSR04 sonarC(21, 4); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
-Motor motorA(27, 14, 26, 0);  // Right Motor - (in1, in2, en)
-Motor motorB(33, 25, 32, 1);  // Left Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
+Motor MotorR(27, 14, 26, 0);  // Right Motor - (in1, in2, en, pwm channel)
+Motor MotorL(33, 25, 32, 1);  // Left Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
 
 void setup() {
   // put your setup code here, to run once:
@@ -26,240 +24,172 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
-  motorA.Speed(200);
-  motorB.Speed(200);
+
+  MotorR.Speed(DutyCycle);
+  MotorL.Speed(DutyCycle);
+  MotorR.Release();
+  MotorL.Release();
+  delay(1000);
+  MotorR.Forward();
+  MotorL.Forward();
 }
 
 void loop() {
   //ActivateSonar(); // reading sonar data
   ActivateIR(); // reading IR data
+  AIR = A + B + C + D + E; // sum of all IR sensor
 
-  motorA.Speed(Speed);
-  motorB.Speed(Speed);
-
-  motorA.Forward();
-  motorB.Forward();
-
-  //FollowObject();
-  //FollowLine();
-  //MakeDecision();
-  delay(200);
-  if (Speed < 255 && Speed >= 200) {
-    if (Speed == 255) {
-      Speed == 200;
+  if (RightWall <= 5) {
+    MedLeft();
+  }
+  else if (LeftWall <= 5) {
+    MedRight();
+  }
+  else if (FrontWall >= 5){
+    if (AIR == 4)
+    {
+      if (A == 0) {
+        _90dLeft();
+      }
+      else if (B == 0) {
+        MedLeft();
+      }
+      else if (C == 0) {
+        Straight();
+      }
+      else if (D == 0) {
+        MedRight();
+      }
+      else if (E == 0) {
+        _90dRight();
+      }
     }
-    else {
-      Speed += 1;
+    else if (AIR == 3)
+    {
+      if (B == 0) {
+        (A == 0) ? SharpLeft() : LowLeft();
+      }
+      else if (D == 0) {
+        (C == 0) ? LowRight() : SharpRight();
+      }
+    }
+    else if (AIR == 2 || AIR == 1) {
+      (A == 1) ? _90dRight() : _90dLeft();
+    }
+    else
+    {
+      if (AIR == 0) {
+        _90dRight();
+      }
+      else if(AIR == 5) {
+        Stop();
+      }
     }
   }
-
+  else if(FrontWall <= 5){
+    AvoidWall();
+  }
 }
+
+void Straight() {
+  MotorR.Speed(255);
+  MotorL.Speed(255);
+}
+void Stop() {
+  MotorR.Speed(0);
+  MotorL.Speed(0);
+}
+
+void LowLeft() {
+  MotorL.Speed(230);
+  MotorR.Speed(255);
+}
+void MedLeft() {
+  MotorL.Speed(200);
+  MotorR.Speed(255);
+}
+void SharpLeft() {
+  MotorL.Speed(0);
+  MotorR.Speed(255);
+}
+
+void LowRight() {
+  MotorR.Speed(230);
+  MotorL.Speed(255);
+}
+void MedRight() {
+  MotorR.Speed(200);
+  MotorL.Speed(255);
+}
+
+void SharpRight() {
+  MotorR.Speed(0);
+  MotorL.Speed(255);
+}
+
+void _90dLeft() {
+  MotorR.Speed(255); MotorL.Speed(0);
+  do {
+    ActivateIR();
+    AIR = A + B + C + D + E;
+  }
+  while (!(AIR == 4 && C == 0));
+}
+void _90dRight() {
+  MotorL.Speed(255); MotorR.Speed(0);
+  do {
+    ActivateIR();
+    AIR = A + B + C + D + E;
+  }
+  while (!(AIR == 4 && C == 0));
+}
+void _180dturn() {
+  MotorL.Speed(255); MotorR.Speed(0);
+  do {
+    ActivateIR();
+    AIR = A + B + C + D + E;
+  }
+  while (!(AIR == 4 && C == 0));
+}
+
 // Reading all Sonar sensor and passing data to another function for processing
 void ActivateSonar() {
-  S1 = sonarA.dist();
-  S2 = sonarB.dist();
-  S3 = sonarC.dist();
+  FrontWall = sonarA.dist();
+  RightWall = sonarB.dist();
+  LeftWall = sonarC.dist();
 
-  Serial.print("S1=");
-  Serial.print(S1);
+  Serial.print("FrontWall=");
+  Serial.print(FrontWall);
 
-  Serial.print(" :S2= ");
-  Serial.print(S2);
+  Serial.print(" :RightWall= ");
+  Serial.print(RightWall);
 
-  Serial.print(" :S3=");
-  Serial.println(S3);
-
-  //PutSonorData(S1, S2, S3); // sending data for processing
+  Serial.print(" :LeftWall=");
+  Serial.println(LeftWall);
 }
 
 // Read all IR sensor and passing data to another function for processing
 void ActivateIR() {
-  valA = digitalRead(IRA); // IR Sensor output pin connected to D1
-  valB = digitalRead(IRB); // IR Sensor output pin connected to D1
-  valC = digitalRead(IRC); // IR Sensor output pin connected to D1
-  valD = digitalRead(IRD); // IR Sensor output pin connected to D1
-  valE = digitalRead(IRE); // IR Sensor output pin connected to D1
+  A = digitalRead(IRA); // IR Sensor output pin connected to D1
+  B = digitalRead(IRB); // IR Sensor output pin connected to D1
+  C = digitalRead(IRC); // IR Sensor output pin connected to D1
+  D = digitalRead(IRD); // IR Sensor output pin connected to D1
+  E = digitalRead(IRE); // IR Sensor output pin connected to D1
 
   Serial.print(":A=");
-  Serial.print(valA); //left
+  Serial.print(A); //left
   Serial.print(":B=");
-  Serial.print(valB);
+  Serial.print(B);
   Serial.print(":C=");
-  Serial.print(valC); //right
+  Serial.print(C); //right
   Serial.print(":D=");
-  Serial.print(valD);
+  Serial.print(D);
   Serial.print(":E=");
-  Serial.println(valE);
+  Serial.println(E);
 }
 
-void MakeDecision() {
-  if (S1 <= 5) {
-    SkipObject();
-  }
-  else if (valA == 0 && valB == 0 && valC == 0 && valD == 0 && valE == 0) {
-    if (S2 <= 30 && S2 <= 30) {
-      //follow object
-      FollowObject();
-    }
-    else {
-      //follow line
-      motorA.Speed(240); motorA.Speed(255);
-      motorA.Forward(); motorB.Forward();
-    }
-  }
-  else {
-    FollowLine();
-  }
+void AvoidWall() {
+
 }
 
-void FollowLine() {
-  //when car on the straight line
-  if (valC == 0 && valA == 1 && valB == 0) {
-    motorB.Speed(245); motorA.Speed(230);
-    motorA.Forward();// Motor Forward(Speed);
-    motorB.Forward();
-    //Serial.println("Forward");
-  }
-
-  //for smooth right turn
-  else if (valC == 0 && valA == 1 && valB == 1) {
-    //if 90 degree right turn
-    if (valE == 0 && valD == 1) {
-      motorB.Speed(255);
-      //motorA.Speed(245);
-      motorA.Stop();// Motor Forward(Speed);
-      motorB.Forward();
-    }
-    else {
-      motorB.Speed(255); motorA.Speed(200);
-      motorA.Forward();// Motor Forward(Speed);
-      motorB.Forward();
-    }
-  }
-
-  //for smooth left turn
-  else if (valC == 1 && valA == 1 && valB == 0) {
-    //if 90 degree left turn
-    if (valE == 1 && valD == 0) {
-      //motorB.Speed(255);
-      motorA.Speed(245);
-      motorA.Forward();// Motor Forward(Speed);
-      motorB.Stop();
-    }
-
-    else {
-      motorB.Speed(200); motorA.Speed(255);
-      motorA.Forward();// Motor Forward(Speed);
-      motorB.Forward();
-    }
-  }
-
-  // curvy right turn
-  else if (valC == 0 && valA == 0 && valB == 1) {
-    motorB.Speed(245);
-    motorB.Forward();
-    motorA.Stop();// Motor Forward(Speed);
-
-  }
-
-  //  curvy left turn
-  else if (valC == 1 && valA == 0 && valB == 0) {
-    motorA.Speed(230);
-    motorA.Forward();// Motor Forward(Speed);
-    motorB.Stop();
-
-  }
-  //when no sensor is detected
-  else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 0) {
-    //motorA.Speed(0); motorB.Speed(0);
-    motorA.Stop();
-    motorB.Stop();
-    //Serial.println("Stop");
-  }
-
-  //when only left most sensor is detected
-  else if (valC == 0 && valA == 0 && valB == 0 && valD == 0 && valE == 1) {
-    motorA.Speed(245);
-    motorA.Forward();
-    motorB.Stop();
-    //Serial.println("Stop");
-  }
-
-  //when only right most sensor is detected
-  else if (valC == 0 && valA == 0 && valB == 0 && valD == 1 && valE == 0) {
-    motorB.Speed(255);
-    motorB.Forward();
-    motorA.Stop();
-    //Serial.println("Stop");
-  }
-}
-
-void SkipObject() {
-  motorA.Speed(240); motorB.Speed(255);
-
-  //turn right
-  delay(500);
-  motorB.Forward();
-  delay(1400);
-
-  //go Forward for 2 sec
-  motorA.Forward();
-  motorB.Forward();
-  delay(500);
-
-  //turn left
-  motorB.Stop();
-  motorA.Forward();
-  delay(900);
-
-  //go Forward straigt for 2 sec
-  motorA.Forward();
-  motorB.Forward();
-  delay(1000);
-
-  //turn left
-  motorB.Stop();
-  motorA.Forward();
-  delay(1200);
-
-  //forward
-  motorA.Forward();
-  motorB.Forward();
-  delay(500);
-
-  //right
-  motorA.Stop();
-  motorB.Forward();
-  delay(1400);
-  motorB.Stop();
-
-  //  while (valA == 0 && valB == 0 & valC && 1 && valD == 1 && valE == 1) {
-  //    motorA.Stop();
-  //    motorB.Stop();
-  //    delay(500);
-  //    motorA.Forward();
-  //    motorB.Forward();
-  //  }
-  obstacle = false;
-  delay(500);
-}
-
-void FollowObject() {
-  int totalDist = (S2 + S3) - 4;
-  int Dist = (totalDist / 2) - 2;
-  motorA.Speed(240); motorB.Speed(255);
-
-  if (S2 <= Dist) {
-    motorA.Forward();
-    motorB.Stop();
-  }
-  else if (S3 <= Dist) {
-    motorA.Stop();
-    motorB.Forward();
-  }
-  else {
-    motorA.Forward();
-    motorB.Forward();
-  }
-}
 

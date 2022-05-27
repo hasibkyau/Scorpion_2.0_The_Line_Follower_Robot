@@ -50,7 +50,7 @@ class Motor {
       digitalWrite(in2, LOW);
     };
 
-    void Stop() {
+    void Release() {
       //Serial.println("Stop");
       digitalWrite(in1, LOW);
       digitalWrite(in2, LOW);
@@ -62,8 +62,8 @@ class Motor {
       Serial.println(in2);
       Serial.println(enable1Pin);
     }
-    void Speed(int spd) {
-      ledcWrite(pwmChannel, spd);
+    void Speed(int dutyCycle ) {
+      ledcWrite(pwmChannel, dutyCycle );
     }
 };
 
