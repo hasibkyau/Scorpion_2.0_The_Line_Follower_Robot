@@ -6,7 +6,7 @@ int DutyCycle = 200, low_speed = 200, med_speed = 230, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
-int dt = 1; // default turn (1 = right, 0 = left).
+int dt = 1; // default turn (1 = right, 0   = left).
 
 HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
@@ -49,21 +49,22 @@ void loop() {
   if (FrontWall >= 20) {
     if (AIR == 4)
     {
-      if (A == 0) {
-        _90dLeft();
-      }
-      else if (B == 0) {
-        MedLeft();
-      }
-      else if (C == 0) {
-        Straight();
-      }
-      else if (D == 0) {
-        MedRight();
-      }
-      else if (E == 0) {
-        _90dRight();
-      }
+      (A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 )? MedRight() : _90dRight(); 
+//      if (A == 0) {
+//        _90dLeft();
+//      }
+//      else if (B == 0) {
+//        MedLeft();
+//      }
+//      else if (C == 0) {
+//        Straight();
+//      }
+//      else if (D == 0) {
+//        MedRight();
+//      }
+//      else if (E == 0) {
+//        _90dRight();
+//      }
     }
     else if (AIR == 3)
     {
