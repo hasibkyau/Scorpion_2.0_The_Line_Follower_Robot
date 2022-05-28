@@ -1,8 +1,9 @@
 #include "Scorpion.h"
 #include <HCSR04.h>
 
+int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
 int DutyCycle = 200, low_speed = 200, med_speed = 230, max_speed = 255;
-int FrontWall = 20, RightWall = 20, LeftWall = 20, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
+int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
 
@@ -37,13 +38,11 @@ void setup() {
 void loop() {
   //ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
-  FrontWall = sonarA.dist();
-  Serial.print(":FrontWall=");
-  Serial.print(FrontWall);
+  //FrontWall = sonarA.dist();
+  //Serial.print(":FrontWall=");
+  //Serial.print(FrontWall);
 
-  AIR = A + B + C + D + E; // sum of all IR sensor
-
-  if (FrontWall >= 25) {
+  if (FrontWall >= 20) {
     if (AIR == 4)
     {
       if (A == 0) {
@@ -80,28 +79,33 @@ void loop() {
     }
     else if (AIR == 5)
     {
-      Straight();
-      delay(500);
+      Serial.println("white space!");delay(500);
+      Straight(); //go 14cm forward
+      delay(wrt);
       Brake(); // Speed 0 with forward gear
-      ReadIR(); ReadSonar();
-      AIR = A + B + C + D + E;
 
-      if (AIR = ! 5) {
+      ReadIR();
+      //ReadSonar();
+
+      if (AIR < 5) {
+        Serial.println("Track Found"); delay(500);
         Straight(); // if found track. It was a blank track.
       }
       else if (AIR == 5) // if no track
       {
-        if (LeftWall <= 50 || RightWall <= 50) // if no track & found walls
+        Serial.println("No Track Found! Wall checking"); delay(500);
+        if (LeftWall <= 50 && RightWall <= 50) // if no track & found walls
         {
+          Serial.println("Wall found!"); delay(500);
           // follow walls until the track is founded
           do {
             ReadIR();
-            AIR = A + B + C + D + E;
             PassThroughWalls();
           }
           while (AIR == 5);
         }
-        else {
+        else if(LeftWall >= 100 && RightWall >= 100){
+          Serial.println("No track and no wall found!"); delay(1000);
           _180dturn(); //if no track and no Side Walls. The track ends here.
         }
       }
@@ -171,7 +175,6 @@ void _90dLeft() {
   MotorR.Speed(max_speed); MotorL.Speed(0);
   do {
     ReadIR();
-    AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0));
 }
@@ -181,17 +184,17 @@ void _90dRight() {
   MotorL.Speed(max_speed); MotorR.Speed(0);
   do {
     ReadIR();
-    AIR = A + B + C + D + E;
   }
   while (!(AIR == 4 && C == 0));
 }
 
 //*** 180d turn on place
 void _180dturn() {
+  Serial.println("Taking U turn"); delay(2000);
   Neutral(); // Both motor stop with neutral gear
-  MotorR.Speed(max_speed); MotorL.Speed(max_speed);
   delay(68);
   MotorL.Forward(); MotorR.Backward();// Rotate on place
+  MotorR.Speed(max_speed); MotorL.Speed(max_speed);
   do {
     ReadIR();
     AIR = A + B + C + D + E;
@@ -244,6 +247,8 @@ void ReadIR() {
   C = digitalRead(IRC); // IR Sensor output pin connected to D1
   D = digitalRead(IRD); // IR Sensor output pin connected to D1
   E = digitalRead(IRE); // IR Sensor output pin connected to D1
+  AIR = A + B + C + D + E;
+
   Serial.println(" ");
   Serial.print(":A=");
   Serial.print(A);
@@ -255,21 +260,22 @@ void ReadIR() {
   Serial.print(D);
   Serial.print(":E=");
   Serial.print(E);
+  Serial.print(":AIR=");
+  Serial.print(AIR);
 }
 
-//***Avoid obstacle if found  
+//***Avoid obstacle if found
 //for default turn == left
 void AvoidObstacle() {
-  MotorL.Speed(0); MotorR.Speed(255);// Left turn
-  delay(555);
-  MotorR.Speed(0); MotorL.Speed(255);// Right turn
-  delay(555);
-  MotorR.Speed(255);// Straight forward
-  delay(555);
-  do{
+  MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
+  delay(wrt);
+  MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
+  delay(wrt);
+  MotorR.Speed(max_speed);// Straight forward
+  delay(wrt);
+  do {
     ReadIR();
-    AIR = A+B+C+D+E;
   }
-  while(AIR > 3); // untill tow sensor track the line
+  while (AIR > 3); // untill tow sensor track the line
   Brake();
 }
