@@ -50,21 +50,6 @@ void loop() {
     if (AIR == 4)
     {
       (A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 )? MedRight() : _90dRight(); 
-//      if (A == 0) {
-//        _90dLeft();
-//      }
-//      else if (B == 0) {
-//        MedLeft();
-//      }
-//      else if (C == 0) {
-//        Straight();
-//      }
-//      else if (D == 0) {
-//        MedRight();
-//      }
-//      else if (E == 0) {
-//        _90dRight();
-//      }
     }
     else if (AIR == 3)
     {
@@ -76,7 +61,8 @@ void loop() {
       }
     }
     else if (AIR == 2 || AIR == 1) {
-      (A == 1) ? _90dRight() : _90dLeft();
+      delay(wrt/8); ReadIR();
+     (AIR == 0) ? DefaultTurn() : ((A == 1) ? _90dRight() : _90dLeft());
     }
     else if (AIR == 0)//multiple line
     {
