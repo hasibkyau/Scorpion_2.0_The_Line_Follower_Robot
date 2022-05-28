@@ -6,8 +6,7 @@ int DutyCycle = 200, low_speed = 200, med_speed = 230, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
-
-bool obstacle = true;
+int dt = 1; // default turn (1 = right, 0 = left).
 
 HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
@@ -33,6 +32,11 @@ void setup() {
   delay(100);
   MotorR.Forward();
   MotorL.Forward();
+}
+
+//*** Default turn
+void DefaultTurn() {
+  (dt == 1) ? _90dRight() : _90dLeft();
 }
 
 void loop() {
@@ -73,13 +77,13 @@ void loop() {
     else if (AIR == 2 || AIR == 1) {
       (A == 1) ? _90dRight() : _90dLeft();
     }
-    else if (AIR == 0)
+    else if (AIR == 0)//multiple line
     {
       DefaultTurn();
     }
-    else if (AIR == 5)
+    else if (AIR == 5)// White space
     {
-      Serial.println("white space!");delay(500);
+      //Serial.println("white space!");delay(500);
       Straight(); //go 14cm forward
       delay(wrt);
       Brake(); // Speed 0 with forward gear
@@ -88,15 +92,15 @@ void loop() {
       //ReadSonar();
 
       if (AIR < 5) {
-        Serial.println("Track Found"); delay(500);
+        //Serial.println("Track Found"); delay(500);
         Straight(); // if found track. It was a blank track.
       }
       else if (AIR == 5) // if no track
       {
-        Serial.println("No Track Found! Wall checking"); delay(500);
+        //Serial.println("No Track Found! Wall checking"); delay(500);
         if (LeftWall <= 50 && RightWall <= 50) // if no track & found walls
         {
-          Serial.println("Wall found!"); delay(500);
+          //Serial.println("Wall found!"); delay(500);
           // follow walls until the track is founded
           do {
             ReadIR();
@@ -105,7 +109,7 @@ void loop() {
           while (AIR == 5);
         }
         else if(LeftWall >= 100 && RightWall >= 100){
-          Serial.println("No track and no wall found!"); delay(1000);
+          //Serial.println("No track and no wall found!"); delay(1000);
           _180dturn(); //if no track and no Side Walls. The track ends here.
         }
       }
@@ -190,7 +194,7 @@ void _90dRight() {
 
 //*** 180d turn on place
 void _180dturn() {
-  Serial.println("Taking U turn"); delay(2000);
+  //Serial.println("Taking U turn"); delay(2000);
   Neutral(); // Both motor stop with neutral gear
   delay(68);
   MotorL.Forward(); MotorR.Backward();// Rotate on place
@@ -204,11 +208,6 @@ void _180dturn() {
   Neutral();
   delay(68);
   MotorL.Forward(); MotorR.Forward();
-}
-
-//*** Default turn
-void DefaultTurn() {
-  true ? _90dRight() : _90dLeft();
 }
 
 //*** Move straight forward in the walls by middle
