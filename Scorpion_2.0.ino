@@ -1,16 +1,28 @@
+// Line follower Robot : Scorpion 2.0
+// By : Md. Hasibur Rahman, KYAU
 #include "Scorpion.h"
 #include <HCSR04.h>
 
 int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
-int DutyCycle = 200, low_speed = 200, med_speed = 230, max_speed = 255;
+int DutyCycle = 200, low_speed = 200, med_speed = 240, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
-HCSR04 sonarA(22, 23); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarB(2, 15); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarC(21, 4); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
+int TOUCH_PIN = 4, BLUE_LED = 21, BUZZER = 15;
+
+int threshold = 30;
+bool touch0detected = false;
+bool touch2detected = false;
+
+void gotTouch0() {
+  touch0detected = true;
+}
+
+HCSR04 sonarA(23, 22); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarB(13, 12); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 sonarC(2, 0); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
 Motor MotorR(27, 14, 26, 0);  // Right Motor - (in1, in2, en, pwm channel)
@@ -24,11 +36,17 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
+ 
+  pinMode(BUZZER, OUTPUT);
+   pinMode(BLUE_LED, OUTPUT);
 
+   
   Neutral();
   MotorR.Speed(DutyCycle);
   MotorL.Speed(DutyCycle);
 
+  Beep();
+  
   delay(100);
   MotorR.Forward();
   MotorL.Forward();
@@ -40,13 +58,14 @@ void DefaultTurn() {
 }
 
 void loop() {
+  
   //ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
   //FrontWall = sonarA.dist();
   //Serial.print(":FrontWall=");
   //Serial.print(FrontWall);
 
-  if (FrontWall >= 20) {
+  if (FrontWall > 5) {
     if (AIR == 4)
     {
       (A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 )? MedRight() : _90dRight(); 
@@ -61,8 +80,9 @@ void loop() {
       }
     }
     else if (AIR == 2 || AIR == 1) {
-      delay(wrt/8); ReadIR();
-     (AIR == 0) ? DefaultTurn() : ((A == 1) ? _90dRight() : _90dLeft());
+      int temp = A;
+      delay(wrt/9); ReadIR();
+     (AIR == 0) ? DefaultTurn() : ((temp == 1) ? _90dRight() : _90dLeft());
     }
     else if (AIR == 0)//multiple line
     {
@@ -264,4 +284,15 @@ void AvoidObstacle() {
   }
   while (AIR > 3); // untill tow sensor track the line
   Brake();
+}
+
+void Beep(){
+  digitalWrite(BUZZER, HIGH);
+  delay(500);
+  digitalWrite(BUZZER, LOW);
+  delay(500);
+  digitalWrite(BUZZER, HIGH);
+  delay(500);
+  digitalWrite(BUZZER, LOW);
+  delay(500);
 }
