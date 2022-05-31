@@ -50,18 +50,18 @@ void loop() {
 
   //ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
-  //FrontWall = sonarA.dist();
-  //Serial.print(":FrontWall=");
-  //Serial.print(FrontWall);
+  FrontWall = sonarA.dist();
+  Serial.print("FrontWall=");
+  Serial.print(FrontWall);
 
-  if (FrontWall > 5) {
+  if (FrontWall > 15) {
     if (AIR == 4)//On track
     {
       //(A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : _90dRight();
-      (A == 0) ? HardLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : HardRight();  
+      (A == 0) ? HardLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : HardRight();
     }
     else if (AIR == 3) //
-    {   
+    {
       if (B == 0) {
         //(A == 0) ? SharpLeft() : SmoothLeft();//smooth left for C = 0 and B = 0
         (C == 0) ? SmoothLeft() : SharpLeft();
@@ -71,16 +71,16 @@ void loop() {
       }
 
       //This is for less than 90 degree curve. when the middle sensor and the left most or right most on the track then its less than 90 degree turn
-//        
-//      if(C == 0){ 
-//        (A == 0)? _90dLeft() : 
-//        (B == 0)? SmoothLeft(): 
-//        (D == 0)? SmoothRight(): _90dRight();
-//      }
-//      else{
-//        (A+B == 0)?SharpLeft():SharpRight();  
-//      }
-      
+      //
+      //      if(C == 0){
+      //        (A == 0)? _90dLeft() :
+      //        (B == 0)? SmoothLeft():
+      //        (D == 0)? SmoothRight(): _90dRight();
+      //      }
+      //      else{
+      //        (A+B == 0)?SharpLeft():SharpRight();
+      //      }
+
     }
     else if (AIR == 2 || AIR == 1) {
       int temp = A;
@@ -166,14 +166,14 @@ void SharpLeft() {
   MotorR.Speed(max_speed);
 }
 
-void HardLeft(){
-  
+void HardLeft() {
+
   MotorL.Speed(0);
   MotorR.Speed(max_speed);
 }
 
 
-void HardRight(){  
+void HardRight() {
   MotorL.Speed(max_speed);
   MotorR.Speed(0);
 }
@@ -200,21 +200,22 @@ void SharpRight() {
 void _90dLeft() {
   Straight();
   delay(wrt);
-  Neutral();delay(10);
+  Neutral(); delay(10);
   MotorR.Forward(); MotorL.Backward();
   MotorL.Speed(max_speed); MotorR.Speed(max_speed);
   do {
     ReadIR();
   }
   while (!(AIR == 4 && C == 0));
-  Neutral();delay(10);
-  MotorL.Forward(); MotorR.Forward();}
+  Neutral(); delay(10);
+  MotorL.Forward(); MotorR.Forward();
+}
 
 //*** 90d Right Turn
 void _90dRight() {
   Straight();
   delay(wrt);
-  Neutral();delay(10);
+  Neutral(); delay(10);
   MotorL.Forward(); MotorR.Backward();
   MotorL.Speed(max_speed); MotorR.Speed(max_speed);
   //MotorL.Speed(max_speed); MotorR.Speed(0);
@@ -222,9 +223,9 @@ void _90dRight() {
     ReadIR();
   }
   while (!(AIR == 4 && C == 0));
-  Neutral();delay(10);
+  Neutral(); delay(10);
   MotorL.Forward(); MotorR.Forward();
-  }
+}
 
 //*** 180d turn on place
 void _180dturn() {
@@ -300,16 +301,18 @@ void ReadIR() {
 //***Avoid obstacle if found
 //for default turn == left
 void AvoidObstacle() {
+ 
   MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
-  delay(wrt);
+  delay(wrt*3);
   MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
-  delay(wrt);
+  delay(wrt*3);
   MotorR.Speed(max_speed);// Straight forward
-  delay(wrt);
+  delay(wrt*2);
+  MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
   do {
     ReadIR();
   }
-  while (AIR > 3); // untill tow sensor track the line
+  while (AIR > 0); // untill tow sensor track the line
   Brake();
 }
 
