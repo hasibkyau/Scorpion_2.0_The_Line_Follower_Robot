@@ -207,16 +207,18 @@ void _90dLeft() {
 
 //*** 90d Right Turn
 void _90dRight() {
-//  Straight();
-//  delay(wrt);
-//  CarRelease();delay(10);
-//  MortorL.Forward(); MotorR.BackWard();
-  MotorL.Speed(max_speed); MotorR.Speed(0);
+  Straight();
+  delay(wrt);
+  Neutral();delay(10);
+  MotorL.Forward(); MotorR.Backward();
+  MotorL.Speed(max_speed); MotorR.Speed(max_speed);
   //MotorL.Speed(max_speed); MotorR.Speed(0);
   do {
     ReadIR();
   }
   while (!(AIR == 4 && C == 0));
+  Neutral();delay(10);
+  MotorL.Forward(); MotorR.Forward();
   }
 
 //*** 180d turn on place
