@@ -32,7 +32,7 @@ void setup() {
   pinMode(BUZZER, OUTPUT);
   pinMode(BLUE_LED, OUTPUT);
   digitalWrite(BLUE_LED, HIGH);
-  Beep();
+  Beep(3, 150);
 
   MotorR.Release();
   MotorL.Release();
@@ -47,6 +47,11 @@ void DefaultTurn() {
 }
 
 void loop() {
+  while(true){
+  Brake();
+  Beep(1, 500);
+  AvoidObstacle();
+  }
 
   //ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
@@ -301,28 +306,27 @@ void ReadIR() {
 //***Avoid obstacle if found
 //for default turn == left
 void AvoidObstacle() {
- 
   MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
   delay(wrt*3);
   MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
   delay(wrt*3);
   MotorR.Speed(max_speed);// Straight forward
   delay(wrt*2);
-  MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
   do {
+    MotorR.Speed(0); MotorL.Speed(max_speed);// Left turn
     ReadIR();
   }
-  while (AIR > 0); // untill tow sensor track the line
+  while (AIR == 5);
   Brake();
 }
 
-void Beep() {
+int Beep(int n, int dly) {
   int i = 0;
-  while (i < 3) {
+  while (i < n) {
     digitalWrite(BUZZER, HIGH);
-    delay(500);
+    delay(dly);
     digitalWrite(BUZZER, LOW);
-    delay(500);
+    delay(dly);
     i++;
   }
 }
