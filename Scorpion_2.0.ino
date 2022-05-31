@@ -47,10 +47,10 @@ void DefaultTurn() {
 }
 
 void loop() {
-  while(true){
-  Brake();
-  Beep(1, 500);
-  AvoidObstacle();
+  while (true) {
+    Brake();
+    Beep(1, 500);
+    AvoidObstacle();
   }
 
   //ReadSonar(); // reading sonar data
@@ -307,13 +307,15 @@ void ReadIR() {
 //for default turn == left
 void AvoidObstacle() {
   MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
-  delay(wrt*3);
+  delay(wrt * 3);
   MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
-  delay(wrt*3);
+  delay(wrt * 3);
   MotorR.Speed(max_speed);// Straight forward
-  delay(wrt*2);
+  delay(wrt * 3);
+  MotorR.Speed(0); MotorL.Speed(max_speed);// Left turn
+  delay(wrt * 3);
   do {
-    MotorR.Speed(0); MotorL.Speed(max_speed);// Left turn
+    MotorR.Speed(max_speed); MotorL.Speed(max_speed);// Left turn
     ReadIR();
   }
   while (AIR == 5);
