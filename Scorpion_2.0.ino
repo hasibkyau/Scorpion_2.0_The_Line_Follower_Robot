@@ -198,12 +198,17 @@ void SharpRight() {
 
 //*** 90d left turn
 void _90dLeft() {
-  MotorR.Speed(max_speed); MotorL.Speed(0);
+  Straight();
+  delay(wrt);
+  Neutral();delay(10);
+  MotorR.Forward(); MotorL.Backward();
+  MotorL.Speed(max_speed); MotorR.Speed(max_speed);
   do {
     ReadIR();
   }
   while (!(AIR == 4 && C == 0));
-}
+  Neutral();delay(10);
+  MotorL.Forward(); MotorR.Forward();}
 
 //*** 90d Right Turn
 void _90dRight() {
