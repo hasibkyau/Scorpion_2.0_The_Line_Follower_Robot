@@ -1,24 +1,16 @@
 // Line follower Robot : Scorpion 2.0
 // By : Md. Hasibur Rahman, KYAU
+
 #include "Scorpion.h"
 #include <HCSR04.h>
-
 int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
-int DutyCycle = 200, low_speed = 200, med_speed = 240, max_speed = 255;
+int DutyCycle = 200, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
 int TOUCH_PIN = 4, BLUE_LED = 21, BUZZER = 15;
-
-int threshold = 30;
-bool touch0detected = false;
-bool touch2detected = false;
-
-void gotTouch0() {
-  touch0detected = true;
-}
 
 HCSR04 sonarA(23, 22); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
 HCSR04 sonarB(13, 12); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
@@ -36,17 +28,14 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
- 
+
   pinMode(BUZZER, OUTPUT);
-   pinMode(BLUE_LED, OUTPUT);
-
-   
-  Neutral();
-  MotorR.Speed(DutyCycle);
-  MotorL.Speed(DutyCycle);
-
+  pinMode(BLUE_LED, OUTPUT);
+  digitalWrite(BLUE_LED, HIGH);
   Beep();
-  
+
+  MotorR.Release();
+  MotorL.Release();
   delay(100);
   MotorR.Forward();
   MotorL.Forward();
@@ -58,7 +47,7 @@ void DefaultTurn() {
 }
 
 void loop() {
-  
+
   //ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
   //FrontWall = sonarA.dist();
@@ -66,23 +55,37 @@ void loop() {
   //Serial.print(FrontWall);
 
   if (FrontWall > 5) {
-    if (AIR == 4)
+    if (AIR == 4)//On track
     {
-      (A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 )? MedRight() : _90dRight(); 
+      //(A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : _90dRight();
+      (A == 0) ? HardLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : HardRight();  
     }
-    else if (AIR == 3)
-    {
+    else if (AIR == 3) //
+    {   
       if (B == 0) {
-        (A == 0) ? SharpLeft() : SmoothLeft();
+        //(A == 0) ? SharpLeft() : SmoothLeft();//smooth left for C = 0 and B = 0
+        (C == 0) ? SmoothLeft() : SharpLeft();
       }
       else if (D == 0) {
         (C == 0) ? SmoothRight() : SharpRight();
       }
+
+      //This is for less than 90 degree curve. when the middle sensor and the left most or right most on the track then its less than 90 degree turn
+//        
+//      if(C == 0){ 
+//        (A == 0)? _90dLeft() : 
+//        (B == 0)? SmoothLeft(): 
+//        (D == 0)? SmoothRight(): _90dRight();
+//      }
+//      else{
+//        (A+B == 0)?SharpLeft():SharpRight();  
+//      }
+      
     }
     else if (AIR == 2 || AIR == 1) {
       int temp = A;
-      delay(wrt/9); ReadIR();
-     (AIR == 0) ? DefaultTurn() : ((temp == 1) ? _90dRight() : _90dLeft());
+      delay(wrt / 8); ReadIR(); //go 1 cm and read the track
+      (AIR == 0) ? DefaultTurn() : ((temp == 1) ? _90dRight() : _90dLeft());
     }
     else if (AIR == 0)//multiple line
     {
@@ -115,7 +118,7 @@ void loop() {
           }
           while (AIR == 5);
         }
-        else if(LeftWall >= 100 && RightWall >= 100){
+        else if (LeftWall >= 100 && RightWall >= 100) {
           //Serial.println("No track and no wall found!"); delay(1000);
           _180dturn(); //if no track and no Side Walls. The track ends here.
         }
@@ -147,37 +150,49 @@ void Neutral() {
 
 //*** Smooth Left Turn
 void SmoothLeft() {
-  MotorL.Speed(med_speed);
+  MotorL.Speed(high_speed);
   MotorR.Speed(max_speed);
 }
 
 //*** Medium Left Turn
 void MedLeft() {
-  MotorL.Speed(low_speed);
+  MotorL.Speed(med_speed);
   MotorR.Speed(max_speed);
 }
 
 //*** Sharp Left Turn
 void SharpLeft() {
+  MotorL.Speed(min_speed);
+  MotorR.Speed(max_speed);
+}
+
+void HardLeft(){
+  
   MotorL.Speed(0);
   MotorR.Speed(max_speed);
 }
 
+
+void HardRight(){  
+  MotorL.Speed(max_speed);
+  MotorR.Speed(0);
+}
+
 //*** Smooth Right Turn
 void SmoothRight() {
-  MotorR.Speed(med_speed);
+  MotorR.Speed(high_speed);
   MotorL.Speed(max_speed);
 }
 
 //*** Medium Right Turn
 void MedRight() {
-  MotorR.Speed(low_speed);
+  MotorR.Speed(med_speed);
   MotorL.Speed(max_speed);
 }
 
 //*** Sharp Right Turn
 void SharpRight() {
-  MotorR.Speed(0);
+  MotorR.Speed(min_speed);
   MotorL.Speed(max_speed);
 }
 
@@ -192,12 +207,17 @@ void _90dLeft() {
 
 //*** 90d Right Turn
 void _90dRight() {
+//  Straight();
+//  delay(wrt);
+//  CarRelease();delay(10);
+//  MortorL.Forward(); MotorR.BackWard();
   MotorL.Speed(max_speed); MotorR.Speed(0);
+  //MotorL.Speed(max_speed); MotorR.Speed(0);
   do {
     ReadIR();
   }
   while (!(AIR == 4 && C == 0));
-}
+  }
 
 //*** 180d turn on place
 void _180dturn() {
@@ -286,13 +306,16 @@ void AvoidObstacle() {
   Brake();
 }
 
-void Beep(){
-  digitalWrite(BUZZER, HIGH);
-  delay(500);
-  digitalWrite(BUZZER, LOW);
-  delay(500);
-  digitalWrite(BUZZER, HIGH);
-  delay(500);
-  digitalWrite(BUZZER, LOW);
-  delay(500);
+void Beep() {
+  int i = 0;
+  while (i < 3) {
+    digitalWrite(BUZZER, HIGH);
+    delay(500);
+    digitalWrite(BUZZER, LOW);
+    delay(500);
+    i++;
+  }
 }
+
+
+
