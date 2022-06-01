@@ -7,14 +7,13 @@ int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
 int DutyCycle = 200, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 35; //IR variable for declaring GPIO Pin
-int A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, AIR; //IR variable for store value
+int A = 0, B = 0, C = 0, D = 0, E = 0, F = 1, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
 int TOUCH_PIN = 4, BLUE_LED = 21, BUZZER = 15;
 
-HCSR04 sonarA(23, 22); //Front Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarB(13, 12); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 sonarC(2, 0); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 SonarR(13, 12); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 SonarL(2, 0); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
 Motor MotorR(27, 14, 26, 0);  // Right Motor - (in1, in2, en, pwm channel)
@@ -50,94 +49,18 @@ void DefaultTurn() {
 
 
 void loop() {
-  while (true) {
-    ReadIR();
-    delay(100);
-//    Brake();
-//    Beep(1, 500);
-//    AvoidObstacle();
-  }
+//  while (true) {
+//    ReadIR();
+//    delay(100);
+//    //    Brake();
+//    //    Beep(1, 500);
+//    //    AvoidObstacle();
+//  }
 
-  //ReadSonar(); // reading sonar data
+  ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
-  FrontWall = sonarA.dist();
-  Serial.print("FrontWall=");
-  Serial.print(FrontWall);
 
-  if (FrontWall > 15) {
-    if (AIR == 4)//On track
-    {
-      //(A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : _90dRight();
-      (A == 0) ? HardLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : HardRight();
-    }
-    else if (AIR == 3) //
-    {
-      if (B == 0) {
-        //(A == 0) ? SharpLeft() : SmoothLeft();//smooth left for C = 0 and B = 0
-        (C == 0) ? SmoothLeft() : SharpLeft();
-      }
-      else if (D == 0) {
-        (C == 0) ? SmoothRight() : SharpRight();
-      }
-
-      //This is for less than 90 degree curve. when the middle sensor and the left most or right most on the track then its less than 90 degree turn
-      //
-      //      if(C == 0){
-      //        (A == 0)? _90dLeft() :
-      //        (B == 0)? SmoothLeft():
-      //        (D == 0)? SmoothRight(): _90dRight();
-      //      }
-      //      else{
-      //        (A+B == 0)?SharpLeft():SharpRight();
-      //      }
-
-    }
-    else if (AIR == 2 || AIR == 1) {
-      int temp = A;
-      delay(wrt / 8); ReadIR(); //go 1 cm and read the track
-      (AIR == 0) ? DefaultTurn() : ((temp == 1) ? _90dRight() : _90dLeft());
-    }
-    else if (AIR == 0)//multiple line
-    {
-      DefaultTurn();
-    }
-    else if (AIR == 5)// White space
-    {
-      //Serial.println("white space!");delay(500);
-      Straight(); //go 14cm forward
-      delay(wrt);
-      Brake(); // Speed 0 with forward gear
-
-      ReadIR();
-      //ReadSonar();
-
-      if (AIR < 5) {
-        //Serial.println("Track Found"); delay(500);
-        Straight(); // if found track. It was a blank track.
-      }
-      else if (AIR == 5) // if no track
-      {
-        //Serial.println("No Track Found! Wall checking"); delay(500);
-        if (LeftWall <= 50 && RightWall <= 50) // if no track & found walls
-        {
-          //Serial.println("Wall found!"); delay(500);
-          // follow walls until the track is founded
-          do {
-            ReadIR();
-            PassThroughWalls();
-          }
-          while (AIR == 5);
-        }
-        else if (LeftWall >= 100 && RightWall >= 100) {
-          //Serial.println("No track and no wall found!"); delay(1000);
-          _180dturn(); //if no track and no Side Walls. The track ends here.
-        }
-      }
-    }
-  }
-  else if (FrontWall <= 5) {
-    AvoidObstacle();
-  }
+  (F == 1) ? FollowTrack() : AvoidObstacle();
 }
 
 //*** Straight Forward
@@ -276,8 +199,8 @@ void PassThroughWalls() {
 
 //*** Reading all Sonar sensor
 void ReadSonar() {
-  RightWall = sonarB.dist();
-  LeftWall = sonarC.dist();
+  RightWall = SonarR.dist();
+  LeftWall = SonarL.dist();
   Serial.print(" :RightWall= ");
   Serial.print(RightWall);
   Serial.print(" :LeftWall=");
@@ -314,6 +237,7 @@ void ReadIR() {
 //***Avoid obstacle if found
 //for default turn == left
 void AvoidObstacle() {
+  Serial.println("Obstacle found!"); delay(500);
   MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
   delay(wrt * 3);
   MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
@@ -328,6 +252,7 @@ void AvoidObstacle() {
   }
   while (AIR == 5);
   Brake();
+  Serial.println("Obstacle skiped!"); delay(500);
 }
 
 int Beep(int n, int dly) {
@@ -338,6 +263,69 @@ int Beep(int n, int dly) {
     digitalWrite(BUZZER, LOW);
     delay(dly);
     i++;
+  }
+}
+
+//Follow track
+void FollowTrack() {
+
+  if (AIR == 4)//On track
+  {
+    //(A == 0) ? _90dLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : _90dRight();
+    (A == 0) ? HardLeft() : (B == 0) ? MedLeft() : (C == 0 ) ? Straight() : ( D == 0 ) ? MedRight() : HardRight();
+  }
+  else if (AIR == 3) //
+  {
+    if (B == 0) {
+      //(A == 0) ? SharpLeft() : SmoothLeft();//smooth left for C = 0 and B = 0
+      (C == 0) ? SmoothLeft() : SharpLeft();
+    }
+    else if (D == 0) {
+      (C == 0) ? SmoothRight() : SharpRight();
+    }
+
+  }
+  else if (AIR == 2 || AIR == 1) {
+    int temp = A;
+    delay(wrt / 8); ReadIR(); //go 1 cm and read the track
+    (AIR == 0) ? DefaultTurn() : ((temp == 1) ? _90dRight() : _90dLeft());
+  }
+  else if (AIR == 0)//multiple line
+  {
+    DefaultTurn();
+  }
+  else if (AIR == 5)// White space
+  {
+    //Serial.println("white space!");delay(500);
+    Straight(); //go 14cm forward
+    delay(wrt);
+    Brake(); // Speed 0 with forward gear
+
+    ReadIR();
+    //ReadSonar();
+
+    if (AIR < 5) {
+      //Serial.println("Track Found"); delay(500);
+      Straight(); // if found track. It was a blank track.
+    }
+    else if (AIR == 5) // if no track
+    {
+      //Serial.println("No Track Found! Wall checking"); delay(500);
+      if (LeftWall <= 50 && RightWall <= 50) // if no track & found walls
+      {
+        Serial.println("Wall found!"); delay(500);
+        // follow walls until the track is founded
+        while (AIR == 5){
+          ReadIR();
+          PassThroughWalls();
+        }
+        Serial.println("Released from wall!"); delay(500);
+      }
+      else if (LeftWall >= 100 && RightWall >= 100) {
+        //Serial.println("No track and no wall found!"); delay(1000);
+        _180dturn(); //if no track and no Side Walls. The track ends here.
+      }
+    }
   }
 }
 
