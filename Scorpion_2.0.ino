@@ -5,9 +5,9 @@
 #include <HCSR04.h>
 //int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
 int wrt = 500; // for super fast mood
-int DutyCycle = 200, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
+int DutyCycle = 0, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
-int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 35; //IR variable for declaring GPIO Pin
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 34; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, F = 1, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
@@ -321,7 +321,7 @@ void ReadIR() {
   C = digitalRead(IRC); // 0 = black, 1 = white
   D = digitalRead(IRD); // 0 = black, 1 = white
   E = digitalRead(IRE); // 0 = black, 1 = white
-  F = digitalRead(IRF); // 1 = black, 0 = white
+  F = digitalRead(IRF); // 0 = black, 1 = white
   AIR = A + B + C + D + E;
 
   Serial.println(" ");
