@@ -197,61 +197,34 @@ void PassThroughWalls() {
   }
 }
 
-//*** Reading all Sonar sensor
-void ReadSonar() {
-  RightWall = SonarR.dist();
-  LeftWall = SonarL.dist();
-  Serial.print(" :RightWall= ");
-  Serial.print(RightWall);
-  Serial.print(" :LeftWall=");
-  Serial.println(LeftWall);
-}
-
-//*** Read all IR sensor
-void ReadIR() {
-  A = digitalRead(IRA); // 0 = black, 1 = white
-  B = digitalRead(IRB); // 0 = black, 1 = white
-  C = digitalRead(IRC); // 0 = black, 1 = white
-  D = digitalRead(IRD); // 0 = black, 1 = white
-  E = digitalRead(IRE); // 0 = black, 1 = white
-  F = digitalRead(IRF); // 1 = black, 0 = white
-  AIR = A + B + C + D + E;
-
-  Serial.println(" ");
-  Serial.print(":A=");
-  Serial.print(A);
-  Serial.print(":B=");
-  Serial.print(B);
-  Serial.print(":C=");
-  Serial.print(C);
-  Serial.print(":D=");
-  Serial.print(D);
-  Serial.print(":E=");
-  Serial.print(E);
-  Serial.print(":F=");
-  Serial.print(F);
-  Serial.print(":AIR=");
-  Serial.print(AIR);
-}
-
 //***Avoid obstacle if found
 //for default turn == left
 void AvoidObstacle() {
+  int max_spd, min_spd;
+  if (dt == 1){
+    max_spd = 0;
+    min_spd = 255;
+  }
+  else {
+    max_spd = 255;
+    min_spd = 0;
+  }
+  Brake();
   Serial.println("Obstacle found!"); delay(500);
-  MotorL.Speed(0); MotorR.Speed(max_speed);// Left turn
+  MotorL.Speed(min_spd); MotorR.Speed(max_spd);// Right turn
   delay(wrt * 3);
-  MotorR.Speed(0); MotorL.Speed(max_speed);// Right turn
+  MotorR.Speed(min_spd); MotorL.Speed(max_spd);// Left turn
   delay(wrt * 3);
-  MotorR.Speed(max_speed);// Straight forward
+  MotorR.Speed(255); MotorL.Speed(255);// Straight forward
   delay(wrt * 3);
-  MotorR.Speed(0); MotorL.Speed(max_speed);// Left turn
+  MotorR.Speed(min_spd); MotorL.Speed(max_spd);// Right turn
   delay(wrt * 3);
   do {
-    MotorR.Speed(max_speed); MotorL.Speed(max_speed);// Left turn
+    MotorR.Speed(255); MotorL.Speed(255);// Straight
     ReadIR();
   }
   while (AIR == 5);
-  Brake();
+  //Brake();
   Serial.println("Obstacle skiped!"); delay(500);
 }
 
@@ -328,6 +301,46 @@ void FollowTrack() {
     }
   }
 }
+
+
+//*** Reading all Sonar sensor
+void ReadSonar() {
+  RightWall = SonarR.dist();
+  LeftWall = SonarL.dist();
+  Serial.print(" :RightWall= ");
+  Serial.print(RightWall);
+  Serial.print(" :LeftWall=");
+  Serial.println(LeftWall);
+}
+
+//*** Read all IR sensor
+void ReadIR() {
+  A = digitalRead(IRA); // 0 = black, 1 = white
+  B = digitalRead(IRB); // 0 = black, 1 = white
+  C = digitalRead(IRC); // 0 = black, 1 = white
+  D = digitalRead(IRD); // 0 = black, 1 = white
+  E = digitalRead(IRE); // 0 = black, 1 = white
+  F = digitalRead(IRF); // 1 = black, 0 = white
+  AIR = A + B + C + D + E;
+
+  Serial.println(" ");
+  Serial.print(":A=");
+  Serial.print(A);
+  Serial.print(":B=");
+  Serial.print(B);
+  Serial.print(":C=");
+  Serial.print(C);
+  Serial.print(":D=");
+  Serial.print(D);
+  Serial.print(":E=");
+  Serial.print(E);
+  Serial.print(":F=");
+  Serial.print(F);
+  Serial.print(":AIR=");
+  Serial.print(AIR);
+}
+
+
 
 
 
