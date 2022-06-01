@@ -3,7 +3,8 @@
 
 #include "Scorpion.h"
 #include <HCSR04.h>
-int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
+//int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
+int wrt = 500; // for super fast mood
 int DutyCycle = 200, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
 int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 35; //IR variable for declaring GPIO Pin
@@ -49,13 +50,13 @@ void DefaultTurn() {
 
 
 void loop() {
-//  while (true) {
-//    ReadIR();
-//    delay(100);
-//    //    Brake();
-//    //    Beep(1, 500);
-//    //    AvoidObstacle();
-//  }
+  /**
+   *get touch
+  TouchSpeed(){
+  if(SuparFast == true){wrt = 500;}
+  else{wrt = 555;}
+  TouchDefaultTurn{toogle default turn};
+  ***/
 
   ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
