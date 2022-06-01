@@ -6,8 +6,8 @@
 int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
 int DutyCycle = 200, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
-int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16; //IR variable for declaring GPIO Pin
-int A = 0, B = 0, C = 0, D = 0, E = 0, AIR; //IR variable for store value
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 35; //IR variable for declaring GPIO Pin
+int A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
 int TOUCH_PIN = 4, BLUE_LED = 21, BUZZER = 15;
@@ -28,6 +28,7 @@ void setup() {
   pinMode(IRC, INPUT);
   pinMode(IRD, INPUT);
   pinMode(IRE, INPUT);
+  pinMode(IRF, INPUT);
 
   pinMode(BUZZER, OUTPUT);
   pinMode(BLUE_LED, OUTPUT);
@@ -46,11 +47,15 @@ void DefaultTurn() {
   (dt == 1) ? _90dRight() : _90dLeft();
 }
 
+
+
 void loop() {
   while (true) {
-    Brake();
-    Beep(1, 500);
-    AvoidObstacle();
+    ReadIR();
+    delay(100);
+//    Brake();
+//    Beep(1, 500);
+//    AvoidObstacle();
   }
 
   //ReadSonar(); // reading sonar data
@@ -281,11 +286,12 @@ void ReadSonar() {
 
 //*** Read all IR sensor
 void ReadIR() {
-  A = digitalRead(IRA); // IR Sensor output pin connected to D1
-  B = digitalRead(IRB); // IR Sensor output pin connected to D1
-  C = digitalRead(IRC); // IR Sensor output pin connected to D1
-  D = digitalRead(IRD); // IR Sensor output pin connected to D1
-  E = digitalRead(IRE); // IR Sensor output pin connected to D1
+  A = digitalRead(IRA); // 0 = black, 1 = white
+  B = digitalRead(IRB); // 0 = black, 1 = white
+  C = digitalRead(IRC); // 0 = black, 1 = white
+  D = digitalRead(IRD); // 0 = black, 1 = white
+  E = digitalRead(IRE); // 0 = black, 1 = white
+  F = digitalRead(IRF); // 1 = black, 0 = white
   AIR = A + B + C + D + E;
 
   Serial.println(" ");
@@ -299,6 +305,8 @@ void ReadIR() {
   Serial.print(D);
   Serial.print(":E=");
   Serial.print(E);
+  Serial.print(":F=");
+  Serial.print(F);
   Serial.print(":AIR=");
   Serial.print(AIR);
 }
