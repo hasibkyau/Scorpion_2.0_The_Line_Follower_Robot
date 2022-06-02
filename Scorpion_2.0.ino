@@ -1,13 +1,14 @@
-// Line follower Robot : Scorpion 2.0
+a// Line follower Robot : Scorpion 2.0
 // By : Md. Hasibur Rahman, KYAU
 
 #include "Scorpion.h"
 #include <HCSR04.h>
-//int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
-int wrt = 500; // for super fast mood
+int min_wall_space = 10;
+int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
+//int wrt = 500; // for super fast mood
 int DutyCycle = 0, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
-int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 21; //IR variable for declaring GPIO Pin
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 23; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, F = 1, AIR; //IR variable for store value
 int dt = 1; // default turn (1 = right, 0   = left).
 
@@ -60,7 +61,7 @@ void loop() {
 
   ReadSonar(); // reading sonar data
   ReadIR(); // reading IR data
-
+  //FollowTrack();
   (F == 1) ? FollowTrack() : AvoidObstacle();
 }
 
@@ -285,7 +286,7 @@ void FollowTrack() {
     else if (AIR == 5) // if no track
     {
       //Serial.println("No Track Found! Wall checking"); delay(500);
-      if (LeftWall <= 50 && RightWall <= 50) // if no track & found walls
+      if (LeftWall <= min_wall_space && RightWall <= min_wall_space) // if no track & found walls
       {
         Serial.println("Wall found!"); delay(500);
         // follow walls until the track is founded
