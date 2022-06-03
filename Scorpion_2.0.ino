@@ -1,25 +1,31 @@
-a// Line follower Robot : Scorpion 2.0
+// Line follower Robot : Scorpion 2.0
 // By : Md. Hasibur Rahman, KYAU
 
 #include "Scorpion.h"
 #include <HCSR04.h>
+
+//Variables 
 int min_wall_space = 10;
 int wrt = 555; // wrt = whell rotation time. time for rotating two time in mls
 //int wrt = 500; // for super fast mood
 int DutyCycle = 0, min_speed = 200, med_speed = 205, high_speed = 210, max_speed = 255;
 int FrontWall = 20, RightWall = 100, LeftWall = 100, RoadWidth = 100, SideSpace = 20; //Declaring Sonar sensor variable
-int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 23; //IR variable for declaring GPIO Pin
 int A = 0, B = 0, C = 0, D = 0, E = 0, F = 1, AIR; //IR variable for store value
-int dt = 1; // default turn (1 = right, 0   = left).
+int dt = 1; // default turn (1 = right, 0   = left)
 
-int TOUCH_PIN = 4, BLUE_LED = 22, BUZZER = 15;
+//GPIO PINS
+int IRA = 19, IRB = 18, IRC = 5, IRD = 17, IRE = 16, IRF = 23; //For IR sensors
+int scl = 22, sda = 21; // for OLED display
+int TOUCH_PIN = 15, BLUE_LED = 22, BUZZER = 4; // LED, BUZZER & TOUCH PIN
+int in1 = 27, in2 = 14, in3 = 33, in4 = 25, en1 = 26, en2 = 32;// For Motor Driver
+int SRT = 13, SRE = 12, SLT = 2, SLE = 0; // for Sonar sensors 
 
-HCSR04 SonarR(13, 12); //Right Sonor - initialisation class HCSR04 (trig pin , echo pin)
-HCSR04 SonarL(2, 0); //Left Sonor - initialisation class HCSR04 (trig pin , echo pin)
+HCSR04 SonarR(SRT, SRE); //Right Sonor - initialisation class HCSR04 (trig pin - input , echo pin - output)
+HCSR04 SonarL(SLT, SLE); //Left Sonor - initialisation class HCSR04 (trig pin - input , echo pin - output)
 
 //Using class "Motor" {methods = Forward, Backward, Stop, Speed, Status}
-Motor MotorR(27, 14, 26, 0);  // Right Motor - (in1, in2, en, pwm channel)
-Motor MotorL(33, 25, 32, 1);  // Left Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
+Motor MotorR(in1, in2, en1, 0);  // Right Motor - (in1, in2, en, pwm channel)
+Motor MotorL(in3, in4, en2, 1);  // Left Motor - (inputpin1, inputpin2, enablepin, pwmChannel[0-18])
 
 void setup() {
   // put your setup code here, to run once:
