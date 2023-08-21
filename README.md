@@ -2,8 +2,7 @@
 ## Line Follower Robot Version 2
 ![Scorpion_2.0](https://github.com/hasibkyau/Scorpion_2.0_The_Line_Follower_Robot/blob/master/scorpion.jpg))
 
-## YouTube:
-[1](https://youtu.be/bVAy8VdHufU?si=jfGNZTV4sEsgE3Dn)
+## YouTube: [https://youtu.be/bVAy8VdHufU?si=jfGNZTV4sEsgE3Dn]
 
 ### Used Components:
 1.	Microcontroller – ESP32
